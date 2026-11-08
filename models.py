@@ -19,7 +19,9 @@ class User(Base):
     )
 
     # One-to-Many Relationship: One User -> Many Posts
-    posts: Mapped[list[Post]] = relationship(back_populates="author")
+    posts: Mapped[list[Post]] = relationship(
+        back_populates="author", cascade="all, delete-orphan"
+    )
 
     # Python Property: Dynamic path resolver
     @property
