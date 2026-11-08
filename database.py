@@ -1,21 +1,27 @@
-from collections.abc import Generator
+from collections.abc import AsyncGenerator
 
-from sqlalchemy import create_engine
+from sqlalchemy.ext.asyncio import (
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
-# 1. Connection URL: 3 slashes + ./ means relative path in current directory
-SQLALCHEMY_DATABASE_URL = "sqlite:///./blog.db"
+# Connection URL: 3 slashes + ./ means relative path in current directory
+SQLALCHEMY_DATABASE_URL = "sqlite+aiosqlite:///./blog.db"
 
-# 2. Engine interface
-engine = create_engine(
+# Engine interface
+engine = create_async_engine(
     SQLALCHEMY_DATABASE_URL,
-    connect_args={
-        "check_same_thread": False
-    },  # SQLite-specific: allows multi-threaded requests
+    connect_args={"check_same_thread": False},
 )
 
 # Session factory
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+AsyncSessionLocal = async_sessionmaker(
+    engine,
+    class_=AsyncSession,
+    expire_on_commit=False,
+)
 
 
 # Declarative Base class (SQLAlchemy 2.0 style)
@@ -24,6 +30,6 @@ class Base(DeclarativeBase):
 
 
 # Dependency Injection generator for FastAPI routes
-def get_db() -> Generator[Session]:
-    with SessionLocal() as db:
-        yield db
+async def get_db() -> AsyncGenerator[AsyncSession]:
+    async with AsyncSessionLocal() as session:
+        yield session
