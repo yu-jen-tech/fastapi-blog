@@ -60,7 +60,11 @@ async def get_post(post_id: int, db: Annotated[AsyncSession, Depends(get_db)]):
 
 @router.get("", response_model=list[PostResponse])
 async def get_posts(db: Annotated[AsyncSession, Depends(get_db)]):
-    stmt = select(models.Post).options(selectinload(models.Post.author))
+    stmt = (
+        select(models.Post)
+        .options(selectinload(models.Post.author))
+        .order_by(models.Post.date_posted.desc())
+    )
     return (await db.execute(stmt)).scalars().all()
 
 
