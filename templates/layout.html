@@ -11,7 +11,6 @@
       <title>FastAPI Blog</title>
     {% endif %}
     <meta name="description" content="FastAPI Tutorial">
-    <meta name="author" content="Corey Schafer">
 
     <!-- Open Graph Tags: The title of the page for social media sharing. It can match the title tag or be more descriptive. -->
     <meta property="og:title" content="FastAPI Blog">
@@ -81,15 +80,20 @@
             </div>
             <!-- Navbar Right Side -->
             <div class="navbar-nav">
-              <!-- Once auth is set up, this button will only be visible when logged in -->
-              <button class="btn btn-outline-light mb-2 mb-md-0 me-md-2"
-                      type="button"
-                      data-bs-toggle="modal"
-                      data-bs-target="#createPostModal">
-                  New Post
-              </button>
-              <a class="btn btn-outline-light mb-2 mb-md-0 me-md-2" href="#">Login</a>
-              <a class="btn btn-light mb-2 mb-md-0 me-md-3" href="#">Register</a>
+            <!-- Shown when logged in (hidden by default via d-none) -->
+                <div id="loggedInNav" class="d-none">
+                    <button class="btn btn-outline-light mb-2 mb-md-0 me-md-2" type="button" data-bs-toggle="modal" data-bs-target="#createPostModal">New Post</button>
+                    <span id="usernameDisplay" class="navbar-text me-md-2"></span>
+                    <button class="btn btn-outline-light mb-2 mb-md-0 me-md-3" id="logoutBtn">Logout</button>
+                </div>
+
+                <!-- Shown when logged out -->
+                <div id="loggedOutNav">
+                    <a class="btn btn-outline-light mb-2 mb-md-0 me-md-2" href="{{ url_for('login_page') }}">Login</a>
+                    <a class="btn btn-light mb-2 mb-md-0 me-md-3" href="{{ url_for('register_page') }}">Register</a>
+                </div>
+
+
               <div class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle"
                    href="#"
@@ -141,7 +145,7 @@
     <footer class="mt-auto py-3 bg-body-tertiary border-top">
       <div class="container text-center">
         <p class="text-body-secondary mb-0">
-          © <span id="year"></span> Corey Schafer
+          © <span id="year"></span>
         </p>
       </div>
     </footer>
@@ -243,7 +247,29 @@
       setTheme(localStorage.getItem('theme') || 'auto');
     </script>
 
-    <!-- templates/layout.html (immediately before closing </body>) -->
+    <script type="module">
+        import { getCurrentUser, logout } from '/static/js/auth.js';
+
+        async function updateAuthUI() {
+            const user = await getCurrentUser();
+            const loggedInNav = document.getElementById('loggedInNav');
+            const loggedOutNav = document.getElementById('loggedOutNav');
+
+            if (user) {
+            loggedInNav.classList.remove('d-none');
+            loggedInNav.classList.add('d-flex');
+            loggedOutNav.classList.add('d-none');
+            document.getElementById('usernameDisplay').textContent = user.email;
+            } else {
+            loggedInNav.classList.add('d-none');
+            loggedInNav.classList.remove('d-flex');
+            loggedOutNav.classList.remove('d-none');
+            }
+        }
+
+        document.getElementById('logoutBtn')?.addEventListener('click', logout);
+        updateAuthUI();
+    </script>
 
     <script type="module">
         import { getErrorMessage, hideModal, showModal } from "/static/js/utils.js";
